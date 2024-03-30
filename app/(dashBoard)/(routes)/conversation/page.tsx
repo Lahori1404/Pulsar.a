@@ -1,4 +1,5 @@
 "use client";
+import axios from "axios"
 import * as z from "zod";
 import { Heading } from "@/components/heading";
 import { MessageSquare } from "lucide-react";
@@ -6,9 +7,19 @@ import { useForm } from "react-hook-form";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { formSchema } from "./constants";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { ChatCompletionMessageParam, ChatCompletionMessage } from "openai/resources/index.mjs";
+import { useState } from "react";
+import { EmptyView } from "@/components/emptyView";
+import { Loader } from "@/components/loader";
 
 const ConversationPage = () => {
+    
+    const router = useRouter();
+    const [messages, setMessages] = useState<ChatCompletionMessage[]>([]);
+
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -19,7 +30,24 @@ const ConversationPage = () => {
     const isLoading = form.formState.isSubmitting;
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
-        console.log(values);
+
+        try {
+            const userMessage: ChatCompletionMessageParam = {
+                role: "user",
+                content: values.prompt
+            }
+            const newMessages = [...messages, userMessage]
+            const response = await axios.post("/api/conversation", {
+                messages: newMessages
+            });
+            setMessages((current) => [...current, userMessage, response.data])
+        } catch (error: any) {
+            //TODO: Open Pro Model
+            console.log(values);
+        } finally {
+            router.refresh();
+        }
+        //console.log(values);
     }
 
     return (
@@ -45,11 +73,29 @@ const ConversationPage = () => {
                                                placeholder="How to I calculate volume inside a cube ?" {...field}/>
                                     </FormControl>
                                 </FormItem>
-                            )}>
-                            
-                            </FormField>
+                            )}/>
+                            <Button className="col-span-12 lg:col-span-2 w-full" disabled={isLoading}>
+                                Generate
+                        </Button>
                         </form>
                     </Form>
+                </div>
+                <div className="space-y-4 mt-4">
+                    {isLoading && (
+                    <div className="p-8 w-full flex items-center justify-center">
+                    <Loader/>
+                    </div>
+                    )}
+                    {messages.length === 0 && !isLoading && (
+                    <EmptyView label="No conversation Started"/>
+                    )}
+                    <div className="flex flex-col-reverse gap-y-4">
+                        {messages.map((message) => (
+                            <div key={message.content} data-size="A4">
+                               {message.content}
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </div>
         </div>
