@@ -2,6 +2,7 @@ import { UserButton } from "@clerk/nextjs";
 import { ArrowRight, Code, ImageIcon, MessagesSquare, Music, VideoIcon } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 const tools = [
     {
@@ -16,7 +17,7 @@ const tools = [
         icon: ImageIcon,
         color: "text-pink-500",
         bgColor: "bg-pink-500/10",
-        href: "/image"
+        href: "/imageGeneration"
     },
     {
         label: "Video Generation",
@@ -37,7 +38,7 @@ const tools = [
         icon: Code,
         color: "text-green-500",
         bgColor: "bg-green-500/10",
-        href: "/code"
+        href: "/codeGeneration"
     },
 ]
 
@@ -52,12 +53,13 @@ const DashBoardPage = () => {
                     Play with the smartest AI - On your Finger tips
                 </p>
             </div>
-            <div className="px-4 md:px-20 lg: px32 space-y-4">
+            <div className="px-4 md:px-20 lg:px-32 flex flex-col space-y-4">
                 {
                     tools.map((tool) => (
+                        <Link key = {tool.href} href={tool.href}>
                         <Card
                          key={tool.href}
-                         className="p-4 border-black/5 flex items-center justify-between hover:shadow-md transition cursor-pointer">
+                         className="p-4 border-black/10 flex items-center justify-between hover:shadow-lg transition cursor-pointer">
                             <div className="flex items-center gap-x-4">
                                 <div className= {cn("p-2 w-fit rounded-md", tool.bgColor)}>
                                     <tool.icon className={cn("w-8 h-8 ", tool.color)}/>
@@ -68,6 +70,7 @@ const DashBoardPage = () => {
                             </div>
                             <ArrowRight className="w-5 h-5"/>
                          </Card>
+                         </Link>
                     ))
                 }
             </div>
